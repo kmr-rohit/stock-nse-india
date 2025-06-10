@@ -26,9 +26,7 @@
     "docs": "typedoc",
     "test": "jest --coverage --testTimeout=600000",
     "lint": "eslint ./src/**/*.ts || true",
-    "gpr-setup": "node ./scripts/setup-gpr.js",
-    "vercel-build": "yarn build",
-    "vercel-start": "yarn start"
+    "gpr-setup": "node ./scripts/setup-gpr.js"
   },
   "lint-staged": {
     "src/**/*.{ts,tsx,js,jsx}": [
