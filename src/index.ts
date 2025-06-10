@@ -13,6 +13,9 @@ import {
     OptionChainData,
     EquityCorporateInfo
 } from './interface'
+import fs from 'fs'
+import path from 'path'
+import csv from 'csv-parse/sync'
 
 export enum ApiList {
     GLOSSARY = '/api/cmsContent?url=/glossary',
@@ -29,6 +32,11 @@ export enum ApiList {
     MERGED_DAILY_REPORTS_CAPITAL = '/api/merged-daily-reports?key=favCapital',
     MERGED_DAILY_REPORTS_DERIVATIVES = '/api/merged-daily-reports?key=favDerivatives',
     MERGED_DAILY_REPORTS_DEBT = '/api/merged-daily-reports?key=favDebt'
+}
+
+export interface ETFData {
+    symbol: string;
+    name: string;
 }
 
 export class NseIndia {
@@ -48,7 +56,44 @@ export class NseIndia {
     private cookieUsedCount = 0
     private cookieExpiry = new Date().getTime() + (this.cookieMaxAge * 1000)
     private noOfConnections = 0
-    
+    private etfData: ETFData[] = []
+
+    constructor() {
+        this.loadETFData()
+    }
+
+    private loadETFData() {
+        try {
+            const csvFilePath = path.join(process.cwd(), 'etfslist.csv')
+            console.log('Loading ETF data from:', csvFilePath)
+            const fileContent = fs.readFileSync(csvFilePath, 'utf-8')
+            
+            // Split the content into lines and process manually
+            const lines = fileContent.split('\n')
+            const etfs: ETFData[] = []
+            
+            // Skip header line
+            for (let i = 1; i < lines.length; i++) {
+                const line = lines[i].trim()
+                if (!line) continue
+                
+                const [symbol, ...nameParts] = line.split(',')
+                if (symbol && nameParts.length > 0) {
+                    etfs.push({
+                        symbol: symbol.trim(),
+                        name: nameParts.join(',').trim()
+                    })
+                }
+            }
+            
+            this.etfData = etfs
+            console.log('Loaded ETF data:', this.etfData.length, 'records')
+            console.log('Sample data:', this.etfData.slice(0, 3))
+        } catch (error) {
+            console.error('Error loading ETF data:', error)
+            this.etfData = []
+        }
+    }
 
     private async getNseCookies() {
         if (this.cookies === '' || this.cookieUsedCount > 10 || this.cookieExpiry <= new Date().getTime()) {
@@ -251,5 +296,13 @@ export class NseIndia {
     getCommodityOptionChain(symbol: string): Promise<OptionChainData> {
         return this.getDataByEndpoint(`/api/option-chain-com?symbol=${encodeURIComponent(symbol
             .toUpperCase())}`)
+    }
+
+    /**
+     * 
+     * @returns List of ETFs with their symbols and names
+     */
+    async getETFs(): Promise<ETFData[]> {
+        return this.etfData
     }
 }

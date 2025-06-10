@@ -12,10 +12,14 @@ import { GraphQLFileLoader } from '@graphql-tools/graphql-file-loader'
 import { openapiSpecification } from './swaggerDocOptions'
 import path from 'path';
 import { mainRouter } from './routes'
+import cors from 'cors'
 
 const app = express()
 const port = process.env.PORT || 3000
 const hostUrl = process.env.HOST_URL || `http://localhost:${port}`
+
+// Enable CORS for all origins
+app.use(cors())
 
 app.use(mainRouter)
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(openapiSpecification));

@@ -849,4 +849,28 @@ mainRouter.get('/api/mostActive/:indexSymbol', async (req, res) => {
     }
 })
 
+/**
+ * @openapi
+ * /api/etfs:
+ *   get:
+ *     description: To get list of all ETFs with their symbols and names
+ *     tags:
+ *       - Common
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Returns a JSON array of ETFs with their symbols and names
+ *       400:
+ *         description: Returns a JSON error object of API call
+ */
+mainRouter.get('/api/etfs', async (_req, res) => {
+    try {
+        const etfs = await nseIndia.getETFs()
+        res.json(etfs)
+    } catch (error) {
+        res.status(400).json(error)
+    }
+})
+
 export { mainRouter }
