@@ -34,7 +34,6 @@ if (process.env.NODE_ENV === 'development') {
     const printedTypeDefs = print(typeDefs)
     console.log(printedTypeDefs)
     console.log('\n=== GraphQL Schema End ===\n')
-    
 }
 
 const resolvers = mergeResolvers(loadedResolvers)
@@ -47,12 +46,29 @@ const server = new ApolloServer({
     plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
 });
 
-server.start().then(() => {
-    server.applyMiddleware({ app });
+// For Vercel deployment
+if (process.env.NODE_ENV === 'production') {
     app.listen(port, () => {
-        console.log(`NseIndia App started in port ${port}`);
-        console.log(`For API docs: ${hostUrl}/api-docs`);
-        console.log(`Open ${hostUrl} in browser.`);
-        console.log(`For graphql: ${hostUrl}${server.graphqlPath}`);
-    })
-})
+        console.log(`Server is running on port ${port}`);
+    });
+} else {
+    // For local development
+    server.start().then(() => {
+        server.applyMiddleware({ app });
+        httpServer.listen(port, () => {
+            console.log(`NseIndia App started in port ${port}`);
+            console.log(`For API docs: ${hostUrl}/api-docs`);
+            console.log(`Open ${hostUrl} in browser.`);
+            console.log(`For graphql: ${hostUrl}${server.graphqlPath}`);
+        });
+    });
+}
+
+// Handle graceful shutdown
+process.on('SIGTERM', () => {
+    console.log('SIGTERM signal received: closing HTTP server');
+    httpServer.close(() => {
+        console.log('HTTP server closed');
+        process.exit(0);
+    });
+});
