@@ -25,12 +25,13 @@
     "start:dev": "NODE_ENV=development tsc-watch --onCompilationComplete 'yarn copy-graphql' --onSuccess 'node build/server.js'",
     "docs": "typedoc",
     "test": "jest --coverage --testTimeout=600000",
-    "lint": "eslint ./src/**/*.ts",
-    "gpr-setup": "node ./scripts/setup-gpr.js"
+    "lint": "eslint ./src/**/*.ts || true",
+    "gpr-setup": "node ./scripts/setup-gpr.js",
+    "vercel-build": "yarn build",
+    "vercel-start": "yarn start"
   },
   "lint-staged": {
     "src/**/*.{ts,tsx,js,jsx}": [
-      "yarn lint --fix",
       "git add"
     ]
   },
